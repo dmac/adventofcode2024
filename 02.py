@@ -1,22 +1,26 @@
-def safe_asc(r):
+def safe_asc(r, damped=False):
     for i, _ in enumerate(r):
         if i == 0:
             continue
-        if r[i] <= r[i-1]:
-            return False
-        if r[i] - r[i-1] > 3:
-            return False
+        if r[i] <= r[i-1] or r[i] - r[i-1] > 3:
+            if damped:
+                return False
+            return (safe_asc(r[:i-1] + r[i:], damped=True) or
+                    safe_asc(r[:i] + r[i+1:], damped=True))
     return True
 
-def safe_desc(r):
+
+def safe_desc(r, damped=False):
     for i, _ in enumerate(r):
         if i == 0:
             continue
-        if r[i] >= r[i-1]:
-            return False
-        if r[i-1] - r[i] > 3:
-            return False
+        if r[i] >= r[i-1] or r[i-1] - r[i] > 3:
+            if damped:
+                return False
+            return (safe_desc(r[:i-1] + r[i:], damped=True) or
+                    safe_desc(r[:i] + r[i+1:], damped=True))
     return True
+
 
 reports = []
 with open("02.input") as f:
@@ -25,15 +29,12 @@ with open("02.input") as f:
 
 sum = 0
 for r in reports:
-    if safe_asc(r) or safe_desc(r):
+    if safe_asc(r, damped=True) or safe_desc(r, damped=True):
         sum += 1
 print(sum)
 
 sum = 0
 for r in reports:
-    for i in range(len(r)):
-        rr = r[:i] + r[i+1:]
-        if safe_asc(rr) or safe_desc(rr):
-            sum += 1
-            break
+    if safe_asc(r) or safe_desc(r):
+        sum += 1
 print(sum)
